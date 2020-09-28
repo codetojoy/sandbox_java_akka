@@ -11,59 +11,44 @@ import java.util.stream.Stream;
 import net.codetojoy.message.*;
 import net.codetojoy.util.Timer;
 
-public class Supervisor extends AbstractBehavior<BeginProcessing> {
+public class Supervisor extends AbstractBehavior<BeginCommand> {
     private static Range range;
 
-    public static Behavior<BeginProcessing> create(Range range) {
+    public static Behavior<BeginCommand> create(Range range) {
         Supervisor.range = range;
         return Behaviors.setup(Supervisor::new);
     }
 
-    private Supervisor(ActorContext<BeginProcessing> context) {
+    private Supervisor(ActorContext<BeginCommand> context) {
         super(context);
     }
 
     @Override
-    public Receive<BeginProcessing> createReceive() {
-        return newReceiveBuilder().onMessage(BeginProcessing.class, this::onBeginProcessing).build();
+    public Receive<BeginCommand> createReceive() {
+        return newReceiveBuilder().onMessage(BeginCommand.class, this::onBeginCommand).build();
     }
 
-    private Behavior<BeginProcessing> onBeginProcessing(BeginProcessing command) {
+    private Behavior<BeginCommand> onBeginCommand(BeginCommand command) {
         try {
             Timer timer = new Timer();
             // create calculator
-            ActorRef<CalcRequest> calculator = getContext().spawn(Calculator.create(), "calculator");
+            ActorRef<CalcCommand> calculator = getContext().spawn(Calculator.create(), "calculator");
 
             // create reporter
-            ActorRef<CalcResponse> reporter = getContext().spawn(Reporter.create(), "reporter");
+            ActorRef<CalcEvent> reporter = getContext().spawn(Reporter.create(), "reporter");
 
             // create workers
-            ActorRef<BlockRequest> worker = getContext().spawn(Worker.create(), "workerN");
+            ActorRef<ProcessRangeCommand> worker = getContext().spawn(Worker.create(), "workerN");
 
             // assign blocks to workers
-            BlockRequest blockRequest = new BlockRequest(Supervisor.range, calculator, reporter);
-            worker.tell(blockRequest);
+            ProcessRangeCommand blockCommand = new ProcessRangeCommand(Supervisor.range, calculator, reporter);
+            worker.tell(blockCommand);
 
-            getContext().getLog().info("TRACER Supervisor {}", timer.getElapsed("onBeginProcessing"));
+            getContext().getLog().info("TRACER Supervisor {}", timer.getElapsed("onBeginCommand"));
         } catch (Exception ex) {
             getContext().getLog().error("TRACER Supervisor caught exception! ex: {}", ex.getMessage());
         }
 
         return this;
     }
-
-    /*
-    protected void sendDoneMessage(String caseId, String name, ActorRef<EmitCase> replyTo) {
-        String payload = "";
-        boolean isDone = true;
-        ActorRef<ParseRow> parser = getGreeterByCaseId(caseId);
-        parser.tell(new ParseRow(caseId, payload, isDone, name, replyTo));
-    }
-
-    protected void sendMessage(String caseId, String payload, String name, ActorRef<EmitCase> replyTo) {
-        boolean isDone = false;
-        ActorRef<ParseRow> parser = getGreeterByCaseId(caseId);
-        parser.tell(new ParseRow(caseId, payload, isDone, name, replyTo));
-    }
-    */
 }

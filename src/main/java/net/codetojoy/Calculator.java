@@ -5,31 +5,31 @@ import akka.actor.typed.javadsl.*;
 
 import net.codetojoy.message.*;
 
-public class Calculator extends AbstractBehavior<CalcRequest> {
+public class Calculator extends AbstractBehavior<CalcCommand> {
 
-    public static Behavior<CalcRequest> create() {
+    public static Behavior<CalcCommand> create() {
         return Behaviors.setup(Calculator::new);
     }
 
-    private Calculator(ActorContext<CalcRequest> context) {
+    private Calculator(ActorContext<CalcCommand> context) {
         super(context);
     }
 
     @Override
-    public Receive<CalcRequest> createReceive() {
-        return newReceiveBuilder().onMessage(CalcRequest.class, this::onCalcRequest).build();
+    public Receive<CalcCommand> createReceive() {
+        return newReceiveBuilder().onMessage(CalcCommand.class, this::onCalcCommand).build();
     }
 
-    private Behavior<CalcRequest> onCalcRequest(CalcRequest calcRequest) {
-        int a = calcRequest.a;
-        int b = calcRequest.b;
-        int c = calcRequest.c;
+    private Behavior<CalcCommand> onCalcCommand(CalcCommand calcCommand) {
+        int a = calcCommand.a;
+        int b = calcCommand.b;
+        int c = calcCommand.c;
 
         if (c == (a + b)) {
-            getContext().getLog().info("TRACER Calculator match: {}", calcRequest.toString());
+            getContext().getLog().info("TRACER Calculator match: {}", calcCommand.toString());
             boolean result = true;
-            CalcResponse calcResponse = new CalcResponse(a, b, c, result);
-            calcRequest.replyTo.tell(calcResponse);
+            CalcEvent calcEvent = new CalcEvent(a, b, c, result);
+            calcCommand.replyTo.tell(calcEvent);
         }
 
         return this;

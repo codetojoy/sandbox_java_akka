@@ -5,28 +5,28 @@ import akka.actor.typed.javadsl.*;
 
 import net.codetojoy.message.*;
 
-public class Worker extends AbstractBehavior<BlockRequest> {
-    public static Behavior<BlockRequest> create() {
+public class Worker extends AbstractBehavior<ProcessRangeCommand> {
+    public static Behavior<ProcessRangeCommand> create() {
         return Behaviors.setup(Worker::new);
     }
 
-    private Worker(ActorContext<BlockRequest> context) {
+    private Worker(ActorContext<ProcessRangeCommand> context) {
         super(context);
     }
 
     @Override
-    public Receive<BlockRequest> createReceive() {
-        return newReceiveBuilder().onMessage(BlockRequest.class, this::onBlockRequest).build();
+    public Receive<ProcessRangeCommand> createReceive() {
+        return newReceiveBuilder().onMessage(ProcessRangeCommand.class, this::onProcessRangeCommand).build();
     }
 
-    private Behavior<BlockRequest> onBlockRequest(BlockRequest blockRequest) {
+    private Behavior<ProcessRangeCommand> onProcessRangeCommand(ProcessRangeCommand processRangeCommand) {
 
-        Range range = blockRequest.range;
+        Range range = processRangeCommand.range;
         for (int a = range.low; a <= range.high; a++) {
             for (int b = range.low; b <= range.high; b++) {
                 for (int c = range.low; c <= range.high; c++) {
-                    CalcRequest calcRequest = new CalcRequest(a, b, c, blockRequest.reporter);
-                    blockRequest.calculator.tell(calcRequest);
+                    CalcCommand calcCommand = new CalcCommand(a, b, c, processRangeCommand.reporter);
+                    processRangeCommand.calculator.tell(calcCommand);
                 }
             }
         }

@@ -2,13 +2,13 @@ package net.codetojoy.message;
 
 import akka.actor.typed.ActorRef;
 
-public final class CalcRequest {
+public final class CalcCommand {
     public final int a;
     public final int b;
     public final int c;
-    public final ActorRef<CalcResponse> replyTo;
+    public final ActorRef<CalcEvent> replyTo;
 
-    public CalcRequest(int a, int b, int c, ActorRef<CalcResponse> replyTo) {
+    public CalcCommand(int a, int b, int c, ActorRef<CalcEvent> replyTo) {
         this.a = a;
         this.b = b;
         this.c = c;

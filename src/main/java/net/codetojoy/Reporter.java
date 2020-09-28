@@ -5,22 +5,22 @@ import akka.actor.typed.javadsl.*;
 
 import net.codetojoy.message.*;
 
-public class Reporter extends AbstractBehavior<CalcResponse> {
-    public static Behavior<CalcResponse> create() {
+public class Reporter extends AbstractBehavior<CalcEvent> {
+    public static Behavior<CalcEvent> create() {
         return Behaviors.setup(Reporter::new);
     }
 
-    private Reporter(ActorContext<CalcResponse> context) {
+    private Reporter(ActorContext<CalcEvent> context) {
         super(context);
     }
 
     @Override
-    public Receive<CalcResponse> createReceive() {
-        return newReceiveBuilder().onMessage(CalcResponse.class, this::onCalcResponse).build();
+    public Receive<CalcEvent> createReceive() {
+        return newReceiveBuilder().onMessage(CalcEvent.class, this::onCalcEvent).build();
     }
 
-    private Behavior<CalcResponse> onCalcResponse(CalcResponse calcResponse) {
-        getContext().getLog().info("TRACER Reporter received: {}", calcResponse.toString());
+    private Behavior<CalcEvent> onCalcEvent(CalcEvent calcEvent) {
+        getContext().getLog().info("TRACER Reporter received: {}", calcEvent.toString());
 
         return this;
     }

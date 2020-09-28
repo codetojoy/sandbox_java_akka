@@ -11,8 +11,8 @@ public class Runner {
         int low = 2;
         int high = 20;
         Range range = new Range(low, high);
-        ActorSystem<BeginProcessing> supervisor = ActorSystem.create(Supervisor.create(range), "supervisor");
-        supervisor.tell(new BeginProcessing("factorial"));
+        ActorSystem<BeginCommand> supervisor = ActorSystem.create(Supervisor.create(range), "supervisor");
+        supervisor.tell(new BeginCommand("factorial"));
 
         try {
             promptForUserInput();
