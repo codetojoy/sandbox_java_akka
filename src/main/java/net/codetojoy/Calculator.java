@@ -21,15 +21,16 @@ public class Calculator extends AbstractBehavior<CalcRequest> {
     }
 
     private Behavior<CalcRequest> onCalcRequest(CalcRequest calcRequest) {
-
-        getContext().getLog().info("TRACER Calculator received: {}", calcRequest.toString());
-
         int a = calcRequest.a;
         int b = calcRequest.b;
         int c = calcRequest.c;
-        boolean result = true;
-        CalcResponse calcResponse = new CalcResponse(a, b, c, result);
-        calcRequest.replyTo.tell(calcResponse);
+
+        if (c == (a + b)) {
+            getContext().getLog().info("TRACER Calculator match: {}", calcRequest.toString());
+            boolean result = true;
+            CalcResponse calcResponse = new CalcResponse(a, b, c, result);
+            calcRequest.replyTo.tell(calcResponse);
+        }
 
         return this;
     }
