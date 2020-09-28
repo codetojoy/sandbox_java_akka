@@ -10,7 +10,7 @@ public class Runner {
     public static void main(String[] args) {
         int low = 2;
         int high = 20;
-        Range range = new Range(low, high);
+        var range = new Range(low, high);
         ActorSystem<BeginCommand> supervisor = ActorSystem.create(Supervisor.create(range), "supervisor");
         supervisor.tell(new BeginCommand("factorial"));
 

@@ -30,7 +30,7 @@ public class Supervisor extends AbstractBehavior<BeginCommand> {
 
     private Behavior<BeginCommand> onBeginCommand(BeginCommand command) {
         try {
-            Timer timer = new Timer();
+            var timer = new Timer();
             // create calculator
             ActorRef<CalcCommand> calculator = getContext().spawn(Calculator.create(), "calculator");
 
@@ -41,8 +41,8 @@ public class Supervisor extends AbstractBehavior<BeginCommand> {
             ActorRef<ProcessRangeCommand> worker = getContext().spawn(Worker.create(), "workerN");
 
             // assign blocks to workers
-            ProcessRangeCommand blockCommand = new ProcessRangeCommand(Supervisor.range, calculator, reporter);
-            worker.tell(blockCommand);
+            var processRangeCommand = new ProcessRangeCommand(Supervisor.range, calculator, reporter);
+            worker.tell(processRangeCommand);
 
             getContext().getLog().info("TRACER Supervisor {}", timer.getElapsed("onBeginCommand"));
         } catch (Exception ex) {

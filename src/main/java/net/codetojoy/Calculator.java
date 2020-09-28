@@ -28,7 +28,7 @@ public class Calculator extends AbstractBehavior<CalcCommand> {
         if (c == (a + b)) {
             getContext().getLog().info("TRACER Calculator match: {}", calcCommand.toString());
             boolean result = true;
-            CalcEvent calcEvent = new CalcEvent(a, b, c, result);
+            var calcEvent = new CalcEvent(a, b, c, result);
             calcCommand.replyTo.tell(calcEvent);
         }
 

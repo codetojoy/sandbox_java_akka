@@ -21,11 +21,11 @@ public class Worker extends AbstractBehavior<ProcessRangeCommand> {
 
     private Behavior<ProcessRangeCommand> onProcessRangeCommand(ProcessRangeCommand processRangeCommand) {
 
-        Range range = processRangeCommand.range;
+        var range = processRangeCommand.range;
         for (int a = range.low; a <= range.high; a++) {
             for (int b = range.low; b <= range.high; b++) {
                 for (int c = range.low; c <= range.high; c++) {
-                    CalcCommand calcCommand = new CalcCommand(a, b, c, processRangeCommand.reporter);
+                    var calcCommand = new CalcCommand(a, b, c, processRangeCommand.reporter);
                     processRangeCommand.calculator.tell(calcCommand);
                 }
             }
