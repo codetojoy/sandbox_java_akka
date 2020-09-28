@@ -6,8 +6,6 @@ import akka.actor.typed.javadsl.*;
 import net.codetojoy.message.*;
 
 public class Worker extends AbstractBehavior<BlockRequest> {
-    private CaseInfo caseInfo = new CaseInfo();
-
     public static Behavior<BlockRequest> create() {
         return Behaviors.setup(Worker::new);
     }

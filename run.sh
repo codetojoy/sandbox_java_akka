@@ -9,4 +9,5 @@ rm -f $LOG_FILE
 
 ./gradlew -q run | tee $LOG_FILE 
 
-
+stat $LOG_FILE > /dev/null 2>&1
+wc -l $LOG_FILE
