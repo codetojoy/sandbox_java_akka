@@ -21,7 +21,8 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
         super(context);
     }
 
-    public sealed interface Command permits BeginCommand {} // , BeginAckEvent {}
+    public sealed interface Command permits BeginCommand {}
+    // public interface Command extends Worker.Command {};
 
     public static final class BeginCommand implements Command {
         final long requestId;
@@ -46,6 +47,7 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
     public Receive<Supervisor.Command> createReceive() {
         return newReceiveBuilder()
                    .onMessage(BeginCommand.class, this::onBeginCommand)
+                   // .onMessage(Worker.ProcessRangeAckEvent.class, this::onProcessRangeAckEvent)
                    .onSignal(PostStop.class, signal -> onPostStop())
                    .build();
     }
@@ -60,10 +62,11 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
             ActorRef<CalcEvent> reporter = getContext().spawn(Reporter.create(), "reporter");
 
             // create workers
-            ActorRef<ProcessRangeCommand> worker = getContext().spawn(Worker.create(), "workerN");
+            ActorRef<Worker.Command> worker = getContext().spawn(Worker.create(), "workerN");
 
             // assign blocks to workers
-            var processRangeCommand = new ProcessRangeCommand(Supervisor.range, calculator, reporter);
+            long requestId = 6160;
+            var processRangeCommand = new Worker.ProcessRangeCommand(requestId, Supervisor.range, calculator, reporter);
             worker.tell(processRangeCommand);
 
             getContext().getLog().info("TRACER Supervisor {}", timer.getElapsed("onBeginCommand"));
@@ -77,8 +80,16 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
         return this;
     }
 
+    /*
+    private Behavior<Supervisor.Command> onProcessRangeAckEvent(Worker.ProcessRangeAckEvent command) {
+        long requestId = command.requestId;
+        getContext().getLog().info("TRACER Supervisor received ACK for requestId: {}", requestId);
+        return this;
+    }
+    */
+
     private Behavior<Command> onPostStop() {
          getContext().getLog().info("TRACER supervisor STOPPED");
          return Behaviors.stopped();
-     }
+    }
 }

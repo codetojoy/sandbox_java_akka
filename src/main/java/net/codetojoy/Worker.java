@@ -1,36 +1,77 @@
 package net.codetojoy;
 
-import akka.actor.typed.Behavior;
+import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
 
 import net.codetojoy.message.*;
 
-public class Worker extends AbstractBehavior<ProcessRangeCommand> {
-    public static Behavior<ProcessRangeCommand> create() {
+public class Worker extends AbstractBehavior<Worker.Command> {
+    public static Behavior<Worker.Command> create() {
         return Behaviors.setup(Worker::new);
     }
 
-    private Worker(ActorContext<ProcessRangeCommand> context) {
+    private Worker(ActorContext<Worker.Command> context) {
         super(context);
     }
 
-    @Override
-    public Receive<ProcessRangeCommand> createReceive() {
-        return newReceiveBuilder().onMessage(ProcessRangeCommand.class, this::onProcessRangeCommand).build();
+    public sealed interface Command permits ProcessRangeCommand {}
+
+    public static final class ProcessRangeCommand implements Command {
+        final long requestId;
+        final Range range;
+        final ActorRef<CalcCommand> calculator;
+        final ActorRef<CalcEvent> reporter;
+        // final ActorRef<Worker.ProcessRangeAckEvent> replyTo;
+
+        public ProcessRangeCommand(long requestId, Range range,
+                                   ActorRef<CalcCommand> calculator, ActorRef<CalcEvent> reporter) {
+            this.requestId = requestId;
+            this.range = range;
+            this.calculator = calculator;
+            this.reporter = reporter;
+            // this.replyTo = replyTo;
+        }
     }
 
-    private Behavior<ProcessRangeCommand> onProcessRangeCommand(ProcessRangeCommand processRangeCommand) {
+    /*
+    public static final class ProcessRangeAckEvent implements Command {
+        final long requestId;
 
-        var range = processRangeCommand.range;
+        public ProcessRangeAckEvent(long requestId) {
+            this.requestId = requestId;
+        }
+    }
+    */
+
+    @Override
+    public Receive<Worker.Command> createReceive() {
+        return newReceiveBuilder()
+                   .onMessage(ProcessRangeCommand.class, this::onProcessRangeCommand)
+                   .onSignal(PostStop.class, signal -> onPostStop())
+                   .build();
+    }
+
+    private Behavior<Worker.Command> onProcessRangeCommand(ProcessRangeCommand command) {
+
+        var range = command.range;
         for (int a = range.low; a <= range.high; a++) {
             for (int b = range.low; b <= range.high; b++) {
                 for (int c = range.low; c <= range.high; c++) {
-                    var calcCommand = new CalcCommand(a, b, c, processRangeCommand.reporter);
-                    processRangeCommand.calculator.tell(calcCommand);
+                    var calcCommand = new CalcCommand(a, b, c, command.reporter);
+                    command.calculator.tell(calcCommand);
                 }
             }
         }
 
+        // TODO
+        // example of response
+        // command.replyTo.tell(new ProcessRangeAckEvent(command.requestId));
+
         return this;
+    }
+
+    private Behavior<Command> onPostStop() {
+         getContext().getLog().info("TRACER worker STOPPED");
+         return Behaviors.stopped();
     }
 }
