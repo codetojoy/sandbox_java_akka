@@ -1,26 +1,52 @@
 package net.codetojoy;
 
-import akka.actor.typed.Behavior;
+import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
 
 import net.codetojoy.message.*;
 
-public class Calculator extends AbstractBehavior<CalcCommand> {
+public class Calculator extends AbstractBehavior<Calculator.Command> {
 
-    public static Behavior<CalcCommand> create() {
+    public static Behavior<Calculator.Command> create() {
         return Behaviors.setup(Calculator::new);
     }
 
-    private Calculator(ActorContext<CalcCommand> context) {
+    private Calculator(ActorContext<Calculator.Command> context) {
         super(context);
     }
 
-    @Override
-    public Receive<CalcCommand> createReceive() {
-        return newReceiveBuilder().onMessage(CalcCommand.class, this::onCalcCommand).build();
+    public sealed interface Command permits CalcCommand {}
+
+    public static final class CalcCommand implements Command {
+        final long requestId;
+        final int a;
+        final int b;
+        final int c;
+        final ActorRef<CalcEvent> replyTo;
+
+        public CalcCommand(long requestId, int a, int b, int c, ActorRef<CalcEvent> replyTo) {
+            this.requestId = requestId;
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.replyTo = replyTo;
+        }
+
+        public String toString() {
+            final String format = "a: %d b: %d c: %d";
+            return String.format(format, a, b, c);
+        }
     }
 
-    private Behavior<CalcCommand> onCalcCommand(CalcCommand calcCommand) {
+    @Override
+    public Receive<Calculator.Command> createReceive() {
+        return newReceiveBuilder()
+                   .onMessage(CalcCommand.class, this::onCalcCommand)
+                   .onSignal(PostStop.class, signal -> onPostStop())
+                   .build();
+    }
+
+    private Behavior<Calculator.Command> onCalcCommand(CalcCommand calcCommand) {
         int a = calcCommand.a;
         int b = calcCommand.b;
         int c = calcCommand.c;
@@ -33,5 +59,10 @@ public class Calculator extends AbstractBehavior<CalcCommand> {
         }
 
         return this;
+    }
+
+    private Behavior<Command> onPostStop() {
+         getContext().getLog().info("TRACER calculator STOPPED");
+         return Behaviors.stopped();
     }
 }

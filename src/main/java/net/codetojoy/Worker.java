@@ -19,12 +19,12 @@ public class Worker extends AbstractBehavior<Worker.Command> {
     public static final class ProcessRangeCommand implements Command {
         final long requestId;
         final Range range;
-        final ActorRef<CalcCommand> calculator;
+        final ActorRef<Calculator.Command> calculator;
         final ActorRef<CalcEvent> reporter;
         // final ActorRef<Worker.ProcessRangeAckEvent> replyTo;
 
         public ProcessRangeCommand(long requestId, Range range,
-                                   ActorRef<CalcCommand> calculator, ActorRef<CalcEvent> reporter) {
+                                   ActorRef<Calculator.Command> calculator, ActorRef<CalcEvent> reporter) {
             this.requestId = requestId;
             this.range = range;
             this.calculator = calculator;
@@ -53,12 +53,15 @@ public class Worker extends AbstractBehavior<Worker.Command> {
 
     private Behavior<Worker.Command> onProcessRangeCommand(ProcessRangeCommand command) {
 
+        var requestId = 1L;
         var range = command.range;
+
         for (int a = range.low; a <= range.high; a++) {
             for (int b = range.low; b <= range.high; b++) {
                 for (int c = range.low; c <= range.high; c++) {
-                    var calcCommand = new CalcCommand(a, b, c, command.reporter);
+                    var calcCommand = new Calculator.CalcCommand(requestId, a, b, c, command.reporter);
                     command.calculator.tell(calcCommand);
+                    requestId++;
                 }
             }
         }

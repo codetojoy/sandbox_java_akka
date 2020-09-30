@@ -56,7 +56,7 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
         try {
             var timer = new Timer();
             // create calculator
-            ActorRef<CalcCommand> calculator = getContext().spawn(Calculator.create(), "calculator");
+            ActorRef<Calculator.Command> calculator = getContext().spawn(Calculator.create(), "calculator");
 
             // create reporter
             ActorRef<CalcEvent> reporter = getContext().spawn(Reporter.create(), "reporter");
