@@ -3,8 +3,6 @@ package net.codetojoy;
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
 
-import net.codetojoy.message.*;
-
 public class Calculator extends AbstractBehavior<Calculator.Command> {
 
     public static Behavior<Calculator.Command> create() {
@@ -22,9 +20,9 @@ public class Calculator extends AbstractBehavior<Calculator.Command> {
         final int a;
         final int b;
         final int c;
-        final ActorRef<CalcEvent> replyTo;
+        final ActorRef<Reporter.Command> replyTo;
 
-        public CalcCommand(long requestId, int a, int b, int c, ActorRef<CalcEvent> replyTo) {
+        public CalcCommand(long requestId, int a, int b, int c, ActorRef<Reporter.Command> replyTo) {
             this.requestId = requestId;
             this.a = a;
             this.b = b;
@@ -33,8 +31,8 @@ public class Calculator extends AbstractBehavior<Calculator.Command> {
         }
 
         public String toString() {
-            final String format = "a: %d b: %d c: %d";
-            return String.format(format, a, b, c);
+            final String format = "requestId: %d a: %d b: %d c: %d";
+            return String.format(format, requestId, a, b, c);
         }
     }
 
@@ -54,7 +52,7 @@ public class Calculator extends AbstractBehavior<Calculator.Command> {
         if (c == (a + b)) {
             getContext().getLog().info("TRACER Calculator match: {}", calcCommand.toString());
             boolean result = true;
-            var calcEvent = new CalcEvent(a, b, c, result);
+            var calcEvent = new Reporter.CalcEvent(calcCommand.requestId, a, b, c, result);
             calcCommand.replyTo.tell(calcEvent);
         }
 

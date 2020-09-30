@@ -3,8 +3,6 @@ package net.codetojoy;
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
 
-import net.codetojoy.message.*;
-
 public class Worker extends AbstractBehavior<Worker.Command> {
     public static Behavior<Worker.Command> create() {
         return Behaviors.setup(Worker::new);
@@ -20,11 +18,11 @@ public class Worker extends AbstractBehavior<Worker.Command> {
         final long requestId;
         final Range range;
         final ActorRef<Calculator.Command> calculator;
-        final ActorRef<CalcEvent> reporter;
+        final ActorRef<Reporter.Command> reporter;
         // final ActorRef<Worker.ProcessRangeAckEvent> replyTo;
 
         public ProcessRangeCommand(long requestId, Range range,
-                                   ActorRef<Calculator.Command> calculator, ActorRef<CalcEvent> reporter) {
+                                   ActorRef<Calculator.Command> calculator, ActorRef<Reporter.Command> reporter) {
             this.requestId = requestId;
             this.range = range;
             this.calculator = calculator;

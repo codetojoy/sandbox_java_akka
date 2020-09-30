@@ -6,7 +6,6 @@ import akka.actor.typed.javadsl.*;
 import java.util.*;
 import java.util.stream.Stream;
 
-import net.codetojoy.message.*;
 import net.codetojoy.util.Timer;
 
 public class Supervisor extends AbstractBehavior<Supervisor.Command> {
@@ -59,7 +58,7 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
             ActorRef<Calculator.Command> calculator = getContext().spawn(Calculator.create(), "calculator");
 
             // create reporter
-            ActorRef<CalcEvent> reporter = getContext().spawn(Reporter.create(), "reporter");
+            ActorRef<Reporter.Command> reporter = getContext().spawn(Reporter.create(), "reporter");
 
             // create workers
             ActorRef<Worker.Command> worker = getContext().spawn(Worker.create(), "workerN");
