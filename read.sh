@@ -14,5 +14,8 @@ echo "elapsed:"
 grep -i elapsed $LOG_FILE
 echo ""
 
-echo "Reporter received:"
-grep -i "tracer.*reporter.*received" $LOG_FILE 
+echo "count Reporter received:"
+grep -i "tracer.*reporter.*received" $LOG_FILE | wc -l 
+
+echo "grep STOPPED"
+grep -i "tracer.*stopped" out.log 
