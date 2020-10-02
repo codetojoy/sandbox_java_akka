@@ -20,33 +20,30 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
         super(context);
     }
 
-    public sealed interface Command permits BeginCommand {}
-    // public interface Command extends Worker.Command {};
+    public sealed interface Command permits BeginCommand, ProcessRangeAckEvent {}
 
+    // this is a "prime the pump" command and not request/response idiom
     public static final class BeginCommand implements Command {
         final long requestId;
-        // final ActorRef<BeginAckEvent> replyTo;
 
-        public BeginCommand(long requestId) { // , ActorRef<BeginAckEvent> replyTo) {
+        public BeginCommand(long requestId) {
             this.requestId = requestId;
-            // this.replyTo = replyTo;
         }
     }
 
-    /*
-    public static final class BeginAckEvent implements Command {
+    public static final class ProcessRangeAckEvent implements Command {
         final long requestId;
-        public BeginAckEvent(long requestId) {
+
+        public ProcessRangeAckEvent(long requestId) {
             this.requestId = requestId;
         }
     }
-    */
 
     @Override
     public Receive<Supervisor.Command> createReceive() {
         return newReceiveBuilder()
                    .onMessage(BeginCommand.class, this::onBeginCommand)
-                   // .onMessage(Worker.ProcessRangeAckEvent.class, this::onProcessRangeAckEvent)
+                   .onMessage(ProcessRangeAckEvent.class, this::onProcessRangeAckEvent)
                    .onSignal(PostStop.class, signal -> onPostStop())
                    .build();
     }
@@ -65,13 +62,12 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
 
             // assign blocks to workers
             long requestId = 6160;
-            var processRangeCommand = new Worker.ProcessRangeCommand(requestId, Supervisor.range, calculator, reporter);
+            ActorRef<Supervisor.Command> self = getContext().getSelf();
+            var processRangeCommand = new Worker.ProcessRangeCommand(requestId, Supervisor.range, calculator, reporter, self);
             worker.tell(processRangeCommand);
 
             getContext().getLog().info("TRACER Supervisor {}", timer.getElapsed("onBeginCommand"));
 
-            // example of response
-            // command.replyTo.tell(new BeginAckEvent(command.requestId));
         } catch (Exception ex) {
             getContext().getLog().error("TRACER Supervisor caught exception! ex: {}", ex.getMessage());
         }
@@ -79,13 +75,11 @@ public class Supervisor extends AbstractBehavior<Supervisor.Command> {
         return this;
     }
 
-    /*
-    private Behavior<Supervisor.Command> onProcessRangeAckEvent(Worker.ProcessRangeAckEvent command) {
+    private Behavior<Supervisor.Command> onProcessRangeAckEvent(Supervisor.ProcessRangeAckEvent command) {
         long requestId = command.requestId;
         getContext().getLog().info("TRACER Supervisor received ACK for requestId: {}", requestId);
         return this;
     }
-    */
 
     private Behavior<Command> onPostStop() {
          getContext().getLog().info("TRACER supervisor STOPPED");

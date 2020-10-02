@@ -19,27 +19,18 @@ public class Worker extends AbstractBehavior<Worker.Command> {
         final Range range;
         final ActorRef<Calculator.Command> calculator;
         final ActorRef<Reporter.Command> reporter;
-        // final ActorRef<Worker.ProcessRangeAckEvent> replyTo;
+        final ActorRef<Supervisor.Command> replyTo;
 
         public ProcessRangeCommand(long requestId, Range range,
-                                   ActorRef<Calculator.Command> calculator, ActorRef<Reporter.Command> reporter) {
+                                   ActorRef<Calculator.Command> calculator, ActorRef<Reporter.Command> reporter,
+                                   ActorRef<Supervisor.Command> replyTo) {
             this.requestId = requestId;
             this.range = range;
             this.calculator = calculator;
             this.reporter = reporter;
-            // this.replyTo = replyTo;
+            this.replyTo = replyTo;
         }
     }
-
-    /*
-    public static final class ProcessRangeAckEvent implements Command {
-        final long requestId;
-
-        public ProcessRangeAckEvent(long requestId) {
-            this.requestId = requestId;
-        }
-    }
-    */
 
     @Override
     public Receive<Worker.Command> createReceive() {
@@ -51,22 +42,21 @@ public class Worker extends AbstractBehavior<Worker.Command> {
 
     private Behavior<Worker.Command> onProcessRangeCommand(ProcessRangeCommand command) {
 
-        var requestId = 1L;
+        var calcRequestId = 1L;
         var range = command.range;
 
         for (int a = range.low; a <= range.high; a++) {
             for (int b = range.low; b <= range.high; b++) {
                 for (int c = range.low; c <= range.high; c++) {
-                    var calcCommand = new Calculator.CalcCommand(requestId, a, b, c, command.reporter);
+                    var calcCommand = new Calculator.CalcCommand(calcRequestId, a, b, c, command.reporter);
                     command.calculator.tell(calcCommand);
-                    requestId++;
+                    calcRequestId++;
                 }
             }
         }
 
-        // TODO
         // example of response
-        // command.replyTo.tell(new ProcessRangeAckEvent(command.requestId));
+        command.replyTo.tell(new Supervisor.ProcessRangeAckEvent(command.requestId));
 
         return this;
     }
