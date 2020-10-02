@@ -11,8 +11,9 @@ dependencies {
     implementation 'commons-io:commons-io:2.8.0'
     implementation 'org.apache.commons:commons-lang3:3.11'
 
-    testCompile 'com.typesafe.akka:akka-actor-testkit-typed_2.13:2.6.9'
-    testCompile 'junit:junit:4.12'
+    testImplementation 'com.typesafe.akka:akka-actor-testkit-typed_2.13:2.6.9'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.scalatestplus:junit-4-12_0.27:3.2.2.0'
 }
 
 sourceCompatibility = 15
@@ -34,4 +35,3 @@ mainClassName = "net.codetojoy.Runner"
 run {
     standardInput = System.in
 }
-

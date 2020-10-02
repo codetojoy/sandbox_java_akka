@@ -10,3 +10,9 @@
 
 * execute: `./run.sh`
     - after initial log flurry, press Enter as the app is waiting for input
+
+### TODO
+
+* based on IoT tutorial example, I couldn't get the unit tests to pass
+    - see links in WorkerTest.java
+* some pretty hairy generic/type-token usage... I may have interpreted it incorrectly 
